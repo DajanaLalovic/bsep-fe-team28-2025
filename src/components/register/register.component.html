@@ -1,0 +1,36 @@
+
+    <div class="register-container">
+    <h2>Sign up here</h2>
+
+
+    <form [formGroup]="registerForm" (ngSubmit)="submit()">
+
+
+    <input type="text" placeholder="First Name" formControlName="name" />
+    <input type="text" placeholder="Last Name" formControlName="surname" />
+    <input type="email" placeholder="Email" formControlName="email" />
+    <input type="text" placeholder="Organization" formControlName="organization" />
+
+
+    <input type="password" placeholder="Password" formControlName="password" (input)="onPasswordInput()" />
+
+    <div class="strength">
+    <div class="bar" [class.active]="strength > 0"></div>
+    <div class="bar" [class.active]="strength > 1"></div>
+    <div class="bar" [class.active]="strength > 2"></div>
+    <div class="bar" [class.active]="strength > 3"></div>
+    <div class="bar" [class.active]="strength > 4"></div>
+    </div>
+
+    <input type="password" placeholder="Confirm Password" formControlName="confirmPassword" />
+
+    <p class="error" *ngIf="registerForm.value.password !== registerForm.value.confirmPassword && registerForm.get('confirmPassword')?.touched">
+    Passwords do not match
+    </p>
+
+    <button type="submit">Register</button>
+
+    <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </form>
+    </div>

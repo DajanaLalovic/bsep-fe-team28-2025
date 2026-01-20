@@ -1,0 +1,27 @@
+<div class="login-container">
+<h2>Log in</h2>
+
+
+<form [formGroup]="loginForm" (ngSubmit)="submit()">
+
+
+<input type="email" placeholder="Email" formControlName="email" />
+
+
+<input type="password" placeholder="Password" formControlName="password" />
+
+
+<!-- Google reCAPTCHA -->
+<re-captcha
+siteKey="6Lf2kk8sAAAAAK0QgKCDBJEk72KFJjgo7bEsYqwO"
+(resolved)="onCaptchaResolved($event)">
+</re-captcha>
+
+
+<button type="submit">Login</button>
+
+
+<p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+<p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+</form>
+</div>
