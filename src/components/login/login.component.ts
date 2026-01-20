@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from 'src/services/auth.service';
+import { RecaptchaModule } from 'ng-recaptcha';
 
 
 @Component({
 selector: 'app-login',
 standalone: true,
-imports: [CommonModule, ReactiveFormsModule],
+imports: [CommonModule, ReactiveFormsModule, RecaptchaModule  ],
 templateUrl: './login.component.html',
 styleUrls: ['./login.component.css']
 })
@@ -27,7 +28,7 @@ constructor(private fb: FormBuilder, private authService: AuthService) {
     });
 }
 
-onCaptchaResolved(token: string) {
+onCaptchaResolved(token: string | null) {
 this.loginForm.patchValue({ captchaResponse: token });
 }
 
