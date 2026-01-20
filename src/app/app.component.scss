@@ -1,8 +1,19 @@
 :host {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  min-height: 100vh;
   background-color: #2a3f71;
 }
+
+app-navbar {
+  flex: 0 0 auto;
+}
+
+.content {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+}
+
 
