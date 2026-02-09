@@ -61,3 +61,13 @@ color: #ef4444;
 margin-top: 12px;
 text-align: center;
 }
+
+.auth-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.forgot-link {
+  cursor: pointer;
+  text-decoration: underline;
+}

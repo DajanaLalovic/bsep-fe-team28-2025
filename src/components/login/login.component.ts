@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from 'src/services/auth.service';
 import { RecaptchaModule } from 'ng-recaptcha';
+import { RouterModule } from '@angular/router';
 
 
 @Component({
 selector: 'app-login',
 standalone: true,
-imports: [CommonModule, ReactiveFormsModule, RecaptchaModule  ],
+imports: [CommonModule, ReactiveFormsModule, RecaptchaModule , RouterModule],
 templateUrl: './login.component.html',
 styleUrls: ['./login.component.css']
 })
