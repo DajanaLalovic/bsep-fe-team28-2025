@@ -1,9 +1,15 @@
+
 <nav class="navbar">
-<div class="logo">SecurityApp</div>
+  <div class="logo">SecurityApp</div>
 
+  <div class="actions">
+    <ng-container *ngIf="!isLoggedIn">
+      <a routerLink="/register" routerLinkActive="active" class="btn outline">Sign up</a>
+      <a routerLink="/login" routerLinkActive="active" class="btn primary">Login</a>
+    </ng-container>
 
-<div class="actions">
-<a routerLink="/register" routerLinkActive="active" class="btn outline">Sign up</a>
-<a routerLink="/login" routerLinkActive="active" class="btn primary">Login</a>
-</div>
+    <ng-container *ngIf="isLoggedIn">
+      <button class="btn primary" (click)="logout()">Logout</button>
+    </ng-container>
+  </div>
 </nav>

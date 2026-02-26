@@ -1,0 +1,51 @@
+<!-- <div class="sessions-container">
+  <h2>Where You're Logged In</h2>
+
+  <div *ngIf="loading">Loading sessions...</div>
+  <div *ngIf="error">{{ error }}</div>
+
+  <div *ngFor="let session of sessions" class="session-card">
+    <div class="session-info">
+      <strong>{{ session.userAgent }}</strong>
+      <p>{{ session.ipAddress }}</p>
+      <p>{{ session.lastActivity | date:'medium' }}</p>
+    </div>
+    <div class="session-actions">
+      <button (click)="revoke(session.jti)">Log Out</button>
+    </div>
+  </div>
+
+  <button class="logout-all" (click)="revokeAll()">Log Out of All Other Sessions</button>
+</div> -->
+<div class="sessions-container">
+  <h2>Where You're Logged In</h2>
+
+  <div *ngIf="loading">Loading sessions...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngFor="let session of sessions" class="session-card">
+    <div class="session-info">
+      <strong>
+        {{ session.userAgent }}
+        <span *ngIf="session.jti === currentJti" class="current-device">Your Device</span>
+      </strong>
+      <p>{{ session.ipAddress }}</p>
+      <p>{{ session.lastActivity | date:'medium' }}</p>
+    </div>
+    <div class="session-actions">
+      <button 
+        (click)="revoke(session.jti)" 
+        title="{{ session.jti === currentJti ? 'It will log you out from this device' : 'Log Out' }}">
+        Log Out
+      </button>
+    </div>
+  </div>
+
+  <!-- Dugme se prikazuje samo ako ima drugih sesija -->
+ <button *ngIf="sessions?.length" 
+        class="logout-all" 
+        (click)="revokeAll()">
+  Log Out of All Other Sessions
+</button>
+  
+</div>

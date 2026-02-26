@@ -46,15 +46,33 @@ return;
 }
 
 
+// this.authService.register(this.registerForm.value).subscribe({
+// next: () => {
+// this.successMessage = 'Registracija uspešna. Proverite email radi aktivacije naloga.';
+// this.errorMessage = '';
+// this.registerForm.reset();
+// },
+// error: err => {
+// this.errorMessage = err?.error?.message || 'Greška pri registraciji';
+// }
+// });
 this.authService.register(this.registerForm.value).subscribe({
-next: () => {
-this.successMessage = 'Registracija uspešna. Proverite email radi aktivacije naloga.';
-this.errorMessage = '';
-this.registerForm.reset();
-},
-error: err => {
-this.errorMessage = err?.error?.message || 'Greška pri registraciji';
-}
+  next: (res) => {
+
+    if (res.success) {
+      this.successMessage = res.message;
+      this.errorMessage = '';
+      this.registerForm.reset();
+    } else {
+      this.errorMessage = res.message;
+      this.successMessage = '';
+    }
+
+  },
+  error: () => {
+    this.errorMessage = 'Server error. Pokušajte ponovo.';
+    this.successMessage = '';
+  }
 });
 }
 }

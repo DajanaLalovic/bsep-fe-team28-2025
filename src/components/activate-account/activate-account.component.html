@@ -1,0 +1,21 @@
+<div class="activation-container">
+
+  <div class="card">
+
+    <div *ngIf="loading" class="loading">
+      ⏳ Account activation in progress...
+    </div>
+
+    <div *ngIf="!loading && success" class="success">
+      ✅ {{ message }}
+      <p>Redirecting to login...</p>
+    </div>
+
+    <div *ngIf="!loading && !success" class="error">
+      ❌ {{ message }}
+      <button routerLink="/login">Go to login</button>
+    </div>
+
+  </div>
+
+</div>

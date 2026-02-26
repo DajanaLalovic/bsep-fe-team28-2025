@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from 'src/services/auth.service';
 
 @Component({
@@ -10,7 +8,6 @@ import { AuthService } from 'src/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './forgot-password.component.html',
-  styleUrls: ['./forgot-password.component.scss']
 })
 export class ForgotPasswordComponent {
 
@@ -18,32 +15,37 @@ export class ForgotPasswordComponent {
   message = '';
   error = '';
 
- forgotForm = this.fb.nonNullable.group({
-  email: ['', [Validators.required, Validators.email]]
-});
+  forgotForm = this.fb.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]]
+  });
 
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService
+  ) {}
 
- constructor(
-  private fb: FormBuilder,
-  private auth: AuthService
-) {}
+  onSubmit() {
+    if (this.forgotForm.invalid) return;
 
-onSubmit() {
-  if (this.forgotForm.invalid) return;
+    this.loading = true;
+    this.message = '';
+    this.error = '';
 
-  this.loading = true;
-
-  this.auth.forgotPassword(this.forgotForm.value.email!)
-    .subscribe({
-      next: () => {
-        this.message = 'If the email exists, a password reset link has been sent.';
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'Something went wrong.';
-        this.loading = false;
-      }
-    });
-}
-
+    this.auth.forgotPassword(this.forgotForm.value.email!)
+      .subscribe({
+        next: (res: any) => {
+          if (res.success === "true") {
+            this.message = res.message;  // "A password reset link has been sent to your email."
+          } else {
+            this.error = res.message;    // "Email does not exist."
+          }
+          this.loading = false;
+        //  this.forgotForm.value.email = ''
+        },
+        error: (err: any) => {
+          this.error = err?.error?.message || 'Something went wrong.';
+          this.loading = false;
+        }
+      });
+  }
 }

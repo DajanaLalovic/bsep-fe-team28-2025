@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from 'src/services/auth.service';
 import { RecaptchaModule } from 'ng-recaptcha';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 
 @Component({
@@ -21,7 +21,7 @@ successMessage = '';
 errorMessage = '';
 
 
-constructor(private fb: FormBuilder, private authService: AuthService) {
+constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
@@ -37,9 +37,12 @@ submit() {
     if (this.loginForm.invalid) return;
 
     this.authService.login(this.loginForm.value).subscribe({
-        next: () => {
+        next: (res) => {
         this.successMessage = 'Login successful.';
         this.errorMessage = '';
+        this.router.navigate(['/']);
+        const tokenValue = res.token
+        const token = localStorage.setItem('token', tokenValue);
         },
         error: err => {
         this.errorMessage = err?.error?.message || 'Invalid email or password.';

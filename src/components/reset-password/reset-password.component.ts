@@ -1,15 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from 'src/services/auth.service';
+import { passwordStrength } from 'src/utils/password-strength.util';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './reset-password.component.html',
-  styleUrls: ['./reset-password.component.scss']
+  styleUrls : ['./reset-password.component.css']
 })
 export class ResetPasswordComponent implements OnInit {
 
@@ -17,6 +18,7 @@ export class ResetPasswordComponent implements OnInit {
   error = '';
   success = '';
   token: string = '';
+  strength = 0;
 
   resetForm = this.fb.group({
     newPassword: ['', [Validators.required, Validators.minLength(8)]],
@@ -25,7 +27,7 @@ export class ResetPasswordComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private auth: AuthService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -39,10 +41,21 @@ export class ResetPasswordComponent implements OnInit {
     });
   }
 
-  onSubmit() {
-    if (this.resetForm.invalid) return;
+  onPasswordInput() {
+    const password = this.resetForm.value.newPassword ?? '';
+    this.strength = passwordStrength(password);
+  }
 
-    if (this.resetForm.value.newPassword !== this.resetForm.value.confirmPassword) {
+  onSubmit() {
+    if (this.resetForm.invalid) {
+      this.error = 'Please fix the errors in the form.';
+      return;
+    }
+
+    const newPassword = this.resetForm.value.newPassword ?? '';
+    const confirmPassword = this.resetForm.value.confirmPassword ?? '';
+
+    if (newPassword !== confirmPassword) {
       this.error = 'Passwords do not match.';
       return;
     }
@@ -51,15 +64,17 @@ export class ResetPasswordComponent implements OnInit {
     this.error = '';
     this.success = '';
 
-    this.http.post('/api/auth/reset-password', {
-      newPassword: this.resetForm.value.newPassword,
-      confirmPassword: this.resetForm.value.confirmPassword
-    }, { params: { token: this.token } }).subscribe({
+    this.auth.resetPassword({
+      newPassword,
+      confirmPassword,
+      token: this.token
+    }).subscribe({
       next: () => {
         this.success = 'Password has been reset successfully.';
         this.loading = false;
+        setTimeout(() => this.router.navigate(['/login']), 3000);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = err.error || 'Something went wrong.';
         this.loading = false;
       }

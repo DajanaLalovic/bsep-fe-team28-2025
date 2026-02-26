@@ -1,0 +1,101 @@
+.sessions-container {
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  max-width: 700px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5; /* svetlo siva pozadina za container */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.sessions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sessions-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.session-card {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  margin: 6px 0;
+  border-radius: 6px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  border: 1px solid #e0e0e0;
+}
+
+.session-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.session-info strong {
+  font-weight: 500;
+}
+
+.session-info p {
+  margin: 2px 0;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.current-device {
+  color: #27ae60;
+  font-size: 0.85em;
+  margin-left: 8px;
+}
+
+.session-actions button {
+  background-color: #3498db; /* plavo dugme */
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+  text-wrap: nowrap;
+}
+
+.session-actions button:hover:not([disabled]) {
+  background-color: #2980b9;
+}
+
+.session-actions button[disabled] {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.logout-all {
+  margin-top: 12px;
+  background-color: #2ecc71; /* zeleno dugme */
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1em;
+  display: inline-block;
+  transition: background-color 0.2s;
+}
+
+.logout-all:hover {
+  background-color: #27ae60;
+}
+
+.error {
+  color: #e74c3c;
+  margin-bottom: 12px;
+}

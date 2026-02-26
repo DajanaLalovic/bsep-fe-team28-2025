@@ -11,11 +11,24 @@ password: string;
 confirmPassword: string;
 organization?: string;
 }
+
+export interface RegisterResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface LoginRequest {
 email: string;
 password: string;
 captchaResponse: string;
 }
+
+export interface ResetPasswordRequest {
+  newPassword: string;
+  confirmPassword: string;
+  token: string;
+}
+
 
 @Injectable({
 providedIn: 'root'
@@ -30,7 +43,13 @@ constructor(private http: HttpClient) {}
 
 
     register(data: RegisterRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, data);
+      return this.http.post<RegisterRequest>(`${this.apiUrl}/register`, data);
+    }
+
+    activate(token: string) {
+      return this.http.get<any>(
+        `${this.apiUrl}/confirm?token=${token}`
+      );
     }
 
     
@@ -38,18 +57,21 @@ constructor(private http: HttpClient) {}
     return this.http.post(`${this.apiUrl}/login`, data);
     }
 
-  //    forgotPassword(email: string) {
-  //   return this.http.post(
-  //     `${this.apiUrl}/forgot-password`,
-  //     null,
-  //     { params: { email } }
-  //   );
-  // }
-  forgotPassword(email: string) {
-  return this.http.post(
-    `${this.apiUrl}/forgot-password`,
-    { email } // ide u body
-  );
-}
+    forgotPassword(email: string) {
+      return this.http.post(
+        `${this.apiUrl}/forgot-password`,
+        { email } 
+      );
+    }
+
+    resetPassword(data: ResetPasswordRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, {
+      newPassword: data.newPassword,
+      confirmPassword: data.confirmPassword
+    }, {
+      params: { token: data.token } // token ide kao query param
+    });
+  }
+
 
 }
