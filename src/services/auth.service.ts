@@ -29,6 +29,10 @@ export interface ResetPasswordRequest {
   token: string;
 }
 
+export interface FirstResetPasswordRequest {
+  newPassword: string;
+  confirmPassword: string;
+}
 
 @Injectable({
 providedIn: 'root'
@@ -73,5 +77,17 @@ constructor(private http: HttpClient) {}
     });
   }
 
+   createCAUser(data: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(
+      `${this.apiUrl}/create-ca-user`,
+      data
+    );
+  }
 
+ firstTimeResetPassword(data: FirstResetPasswordRequest): Observable<any> {
+  return this.http.post(`${this.apiUrl}/first-login-reset-password`, {
+    newPassword: data.newPassword,
+    confirmPassword: data.confirmPassword
+  });
+}
 }

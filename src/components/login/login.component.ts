@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AuthService } from 'src/services/auth.service';
 import { RecaptchaModule } from 'ng-recaptcha';
 import { Router, RouterModule } from '@angular/router';
+import { AuthStore } from 'src/services/auth.store';
 
 
 @Component({
@@ -21,7 +22,7 @@ successMessage = '';
 errorMessage = '';
 
 
-constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+constructor(private fb: FormBuilder, private authService: AuthService, private router: Router, private authStore: AuthStore) {
     this.loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
@@ -40,9 +41,16 @@ submit() {
         next: (res) => {
         this.successMessage = 'Login successful.';
         this.errorMessage = '';
-        this.router.navigate(['/']);
+       // this.router.navigate(['/']);
+       this.authStore.login(res.token); // automatski propagira stanje
         const tokenValue = res.token
-        const token = localStorage.setItem('token', tokenValue);
+        localStorage.setItem('token', tokenValue);
+        const payload = JSON.parse(atob(tokenValue.split('.')[1]));
+        if (payload.firstLogin) {
+        this.router.navigate(['/force-change-password']);
+        } else {
+        this.router.navigate(['/']);
+        }
         },
         error: err => {
         this.errorMessage = err?.error?.message || 'Invalid email or password.';

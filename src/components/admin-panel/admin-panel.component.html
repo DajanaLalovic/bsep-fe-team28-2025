@@ -1,0 +1,23 @@
+<div *ngIf="isAdmin">
+  <button class="btn primary" (click)="openModal()">
+    Create CA User
+  </button>
+</div>
+
+<div class="modal" *ngIf="showModal">
+  <div class="modal-content">
+    <h3>Create CA User</h3>
+
+    <form [formGroup]="form">
+      <input formControlName="name" placeholder="First name">
+      <input formControlName="surname" placeholder="Last name">
+      <input formControlName="email" placeholder="Email">
+      <input formControlName="organization" placeholder="Organization">
+    </form>
+
+    <button (click)="create()">Create</button>
+    <button (click)="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<p>{{message}}</p>

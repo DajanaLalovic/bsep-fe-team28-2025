@@ -1,4 +1,4 @@
-
+<!-- 
 <nav class="navbar">
   <div class="logo">SecurityApp</div>
 
@@ -10,6 +10,23 @@
 
     <ng-container *ngIf="isLoggedIn">
       <button class="btn primary" (click)="logout()">Logout</button>
+      <a *ngIf="isAdmin" routerLink="/admin-panel" routerLinkActive="active" class="btn outline">Admin Panel</a>
+    </ng-container>
+  </div>
+</nav> -->
+
+<nav class="navbar">
+  <div class="logo">SecurityApp</div>
+
+  <div class="actions">
+    <ng-container *ngIf="!(isLoggedIn$ | async)">
+      <a routerLink="/register" class="btn outline">Sign up</a>
+      <a routerLink="/login" class="btn primary">Login</a>
+    </ng-container>
+
+    <ng-container *ngIf="isLoggedIn$ | async">
+      <button class="btn primary" (click)="logout()">Logout</button>
+      <a *ngIf="isAdmin$ | async" routerLink="/admin-panel" class="btn outline">Admin Panel</a>
     </ng-container>
   </div>
 </nav>
