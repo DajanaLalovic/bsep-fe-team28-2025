@@ -2,14 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-
 export interface RegisterRequest {
-name: string;
-surname: string;
-email: string;
-password: string;
-confirmPassword: string;
-organization?: string;
+  name: string;
+  surname: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  organization?: string;
 }
 
 export interface RegisterResponse {
@@ -18,9 +17,9 @@ export interface RegisterResponse {
 }
 
 export interface LoginRequest {
-email: string;
-password: string;
-captchaResponse: string;
+  email: string;
+  password: string;
+  captchaResponse: string;
 }
 
 export interface ResetPasswordRequest {
@@ -34,60 +33,67 @@ export interface FirstResetPasswordRequest {
   confirmPassword: string;
 }
 
+export interface UserListDto {
+  id: number;
+  name: string;
+  surname: string;
+  email: string;
+  organization: string;
+  role: string;
+}
+
 @Injectable({
-providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
+  private apiUrl = 'https://localhost:8443/api/auth';
 
+  constructor(private http: HttpClient) {}
 
-private apiUrl = 'https://localhost:8443/api/auth';
-
-
-constructor(private http: HttpClient) {}
-
-
-    register(data: RegisterRequest): Observable<any> {
-      return this.http.post<RegisterRequest>(`${this.apiUrl}/register`, data);
-    }
-
-    activate(token: string) {
-      return this.http.get<any>(
-        `${this.apiUrl}/confirm?token=${token}`
-      );
-    }
-
-    
-    login(data: LoginRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, data);
-    }
-
-    forgotPassword(email: string) {
-      return this.http.post(
-        `${this.apiUrl}/forgot-password`,
-        { email } 
-      );
-    }
-
-    resetPassword(data: ResetPasswordRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset-password`, {
-      newPassword: data.newPassword,
-      confirmPassword: data.confirmPassword
-    }, {
-      params: { token: data.token } // token ide kao query param
-    });
+  register(data: RegisterRequest): Observable<any> {
+    return this.http.post<RegisterRequest>(`${this.apiUrl}/register`, data);
   }
 
-   createCAUser(data: RegisterRequest): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(
-      `${this.apiUrl}/create-ca-user`,
-      data
+  activate(token: string) {
+    return this.http.get<any>(`${this.apiUrl}/confirm?token=${token}`);
+  }
+
+  getCaUsers(): Observable<UserListDto[]> {
+    return this.http.get<UserListDto[]>(`${this.apiUrl}/ca-users`);
+  }
+
+  login(data: LoginRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, data);
+  }
+
+  forgotPassword(email: string) {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(data: ResetPasswordRequest): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/reset-password`,
+      {
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      },
+      {
+        params: { token: data.token }, // token ide kao query param
+      },
     );
   }
 
- firstTimeResetPassword(data: FirstResetPasswordRequest): Observable<any> {
-  return this.http.post(`${this.apiUrl}/first-login-reset-password`, {
-    newPassword: data.newPassword,
-    confirmPassword: data.confirmPassword
-  });
-}
+  createCAUser(data: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(
+      `${this.apiUrl}/create-ca-user`,
+      data,
+    );
+  }
+
+  firstTimeResetPassword(data: FirstResetPasswordRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/first-login-reset-password`, {
+      newPassword: data.newPassword,
+      confirmPassword: data.confirmPassword,
+    });
+  }
 }
