@@ -24,7 +24,7 @@ export class ActivateAccountComponent implements OnInit {
 
   ngOnInit() {
     const token = this.route.snapshot.queryParamMap.get('token');
-    console.log('token', token)
+    //console.log('token', token)
     if (!token) {
       this.loading = false;
       this.success = false;

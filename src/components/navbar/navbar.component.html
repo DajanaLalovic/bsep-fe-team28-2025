@@ -1,20 +1,3 @@
-<!-- 
-<nav class="navbar">
-  <div class="logo">SecurityApp</div>
-
-  <div class="actions">
-    <ng-container *ngIf="!isLoggedIn">
-      <a routerLink="/register" routerLinkActive="active" class="btn outline">Sign up</a>
-      <a routerLink="/login" routerLinkActive="active" class="btn primary">Login</a>
-    </ng-container>
-
-    <ng-container *ngIf="isLoggedIn">
-      <button class="btn primary" (click)="logout()">Logout</button>
-      <a *ngIf="isAdmin" routerLink="/admin-panel" routerLinkActive="active" class="btn outline">Admin Panel</a>
-    </ng-container>
-  </div>
-</nav> -->
-
 <nav class="navbar">
   <div class="logo">SecurityApp</div>
 
@@ -27,6 +10,9 @@
     <ng-container *ngIf="isLoggedIn$ | async">
       <button class="btn primary" (click)="logout()">Logout</button>
       <a *ngIf="isAdmin$ | async" routerLink="/admin-panel" class="btn outline">Admin Panel</a>
+       <a routerLink="/sessions" class="btn outline">Sessions</a>
+       <a *ngIf="isEE$ | async" routerLink="/password-manager" class="btn outline">Create password</a>
+       <a *ngIf="isEE$ | async" routerLink="/my-passwords" class="btn outline">My passwords</a>
     </ng-container>
   </div>
 </nav>

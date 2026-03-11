@@ -17,27 +17,21 @@ export class NavbarComponent {
 
   isLoggedIn$!: Observable<boolean>;
   isAdmin$!: Observable<boolean>;
+  isEE$!: Observable<boolean>;
 
 
   ngOnInit() {
     this.isLoggedIn$ = this.authStore.isLoggedIn$;
     this.isAdmin$ = this.authStore.isAdmin$;
+    this.isEE$ = this.authStore.isEE$;
   }
 
 
   constructor(private router: Router, private authStore: AuthStore) {}
   isAdmin = false
+  isEE = false
 
-  //  ngOnInit(): void {
-  //   const token = localStorage.getItem('token');
-
-  //   if (!token) return;
-
-  //   const payload = JSON.parse(atob(token.split('.')[1]));
-  // console.log(payload)
-  // this.isAdmin = Array.isArray(payload.roles) 
-  // && payload.roles.some((role: any) => role === 'ADMINISTRATOR');
-  // }
+  
 
   get isLoggedIn(): boolean {
     return !!localStorage.getItem('token');

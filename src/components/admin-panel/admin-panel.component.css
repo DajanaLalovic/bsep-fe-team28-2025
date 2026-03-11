@@ -1,0 +1,77 @@
+.admin-container {
+  margin: 40px;
+}
+
+.admin-modal {
+  background: rgba(2,6,23,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.admin-modal-content {
+  width: 420px;
+  background: #0f172a;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
+  color: #e5e7eb;
+}
+
+.admin-modal-content h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #60a5fa;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-form input {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+.admin-form input:focus {
+  outline: 2px solid #2563eb;
+}
+
+.admin-message {
+  margin-top: 20px;
+  text-align: center;
+  color: #22c55e;
+}
+
+.btn-primary {
+  padding: 12px 18px;
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-secondary {
+  padding: 12px 18px;
+  background: #374151;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}

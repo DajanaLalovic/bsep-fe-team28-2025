@@ -15,13 +15,13 @@ export const routes: Routes = [
     { path: '', component: HomeComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'login', component: LoginComponent},
-    { path: 'forgot-password', component: ForgotPasswordComponent , canActivate: [AuthGuard, FirstLoginGuard]},
-    { path: 'reset-password', component: ResetPasswordComponent, canActivate: [AuthGuard, FirstLoginGuard] },
+    { path: 'forgot-password', component: ForgotPasswordComponent , canActivate: [FirstLoginGuard]},
+    { path: 'reset-password', component: ResetPasswordComponent, canActivate: [FirstLoginGuard] },
     {
   path: 'activate',
   loadComponent: () =>
     import("src/components/activate-account/activate-account.component")
-      .then(m => m.ActivateAccountComponent) , canActivate: [AuthGuard, FirstLoginGuard]
+      .then(m => m.ActivateAccountComponent) , canActivate: [ FirstLoginGuard]
 },
     { path: 'sessions', component: SessionsComponent , canActivate: [AuthGuard, FirstLoginGuard] },
     {
@@ -29,5 +29,25 @@ export const routes: Routes = [
   component: AdminPanelComponent,
   canActivate: [AuthGuard, AdminGuard, FirstLoginGuard]
 },
-{ path: 'force-change-password', component: ForceChangePasswordComponent }
+{ path: 'force-change-password', component: ForceChangePasswordComponent },
+{
+  path: 'password-manager',
+  loadComponent: () =>
+    import('src/components/password-create/password-create.component')
+      .then(m => m.PasswordCreateComponent),
+  canActivate: [AuthGuard, FirstLoginGuard] 
+},{
+  path: 'my-passwords',
+  loadComponent: () =>
+    import('src/components/password-list/password-list.component')
+      .then(m => m.PasswordListComponent),
+  canActivate: [AuthGuard, FirstLoginGuard]
+},{
+  path: 'share-my-passwords',
+  loadComponent: () =>
+    import('src/components/share-password/share-password.component')
+      .then(m => m.SharePasswordComponent),
+  canActivate: [AuthGuard, FirstLoginGuard]
+}
+
 ];

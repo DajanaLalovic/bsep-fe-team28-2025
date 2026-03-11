@@ -1,0 +1,8 @@
+<div class="key-upload-container">
+      <h3>Upload Private Key (.pem)</h3>
+      
+    <div class="upload-key-box">
+      <input type="file" (change)="onFileSelected($event)" accept=".pem"  class="key-upload-input"/>
+      <p *ngIf="error" class="key-upload-error">{{ error }}</p>
+    </div>
+</div>
