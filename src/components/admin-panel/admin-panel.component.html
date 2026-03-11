@@ -1,23 +1,223 @@
-<div *ngIf="isAdmin">
-  <button class="btn primary" (click)="openModal()">
-    Create CA User
-  </button>
-</div>
+<div *ngIf="isAdmin" class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="title">Admin Panel</h2>
+      <p class="subtitle">Manage CA users and issue certificates</p>
+    </div>
 
+    <button class="btn primary" (click)="openModal()">+ Create CA User</button>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>CA Users</h3>
+      <span class="pill">{{ caUsers.length }} total</span>
+    </div>
+
+    <div *ngIf="loadingUsers" class="state">Loading users...</div>
+
+    <div *ngIf="!loadingUsers && caUsers.length === 0" class="state">
+      No CA users found.
+    </div>
+
+    <div *ngIf="!loadingUsers && caUsers.length > 0" class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Organization</th>
+            <th>Email</th>
+            <th class="right">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let u of caUsers">
+            <td>
+              <div class="user-cell">
+                <div class="avatar">
+                  {{ u.name[0] || "U" }}{{ u.surname[0] || "" }}
+                </div>
+                <div class="user-text">
+                  <div class="user-name">{{ u.name }} {{ u.surname }}</div>
+                  <!-- <div class="user-sub">ID: {{ u.id }}</div> -->
+                </div>
+              </div>
+            </td>
+
+            <td>{{ u.organization || "-" }}</td>
+            <td class="mono">{{ u.email }}</td>
+
+            <td class="right">
+              <button class="btn small" (click)="openIssueModal(u.id)">
+                Issue certificate
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!-- CREATE CA USER MODAL -->
 <div class="modal" *ngIf="showModal">
   <div class="modal-content">
     <h3>Create CA User</h3>
 
-    <form [formGroup]="form">
-      <input formControlName="name" placeholder="First name">
-      <input formControlName="surname" placeholder="Last name">
-      <input formControlName="email" placeholder="Email">
-      <input formControlName="organization" placeholder="Organization">
+    <form [formGroup]="form" class="form">
+      <input formControlName="name" placeholder="First name" />
+      <input formControlName="surname" placeholder="Last name" />
+      <input formControlName="email" placeholder="Email" />
+      <input formControlName="organization" placeholder="Organization" />
     </form>
 
-    <button (click)="create()">Create</button>
-    <button (click)="closeModal()">Cancel</button>
+    <div class="actions">
+      <button class="btn primary" (click)="create()">Create</button>
+      <button class="btn" (click)="closeModal()">Cancel</button>
+    </div>
   </div>
 </div>
 
-<p>{{message}}</p>
+<!-- ISSUE CERTIFICATE MODAL -->
+<div class="modal-overlay" *ngIf="showIssueModal">
+  <div class="issue-modal">
+    <div class="modal-header">
+      <div>
+        <h3>Issue Certificate</h3>
+        <p class="subtitle">
+          Issuing for CA user <b>ID {{ selectedUserId }}</b>
+        </p>
+      </div>
+
+      <button class="close-btn" (click)="closeIssueModal()">✕</button>
+    </div>
+
+    <form [formGroup]="issueForm" class="form">
+      <div class="grid-2">
+        <div class="field">
+          <label>Certificate type</label>
+          <select formControlName="type">
+            <option value="INTERMEDIATE">INTERMEDIATE (CA)</option>
+            <option value="END_ENTITY">END ENTITY</option>
+            <option value="ROOT">ROOT</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Validity (days)</label>
+          <input type="number" formControlName="validityDays" />
+        </div>
+      </div>
+
+      <div class="field" *ngIf="issueForm.get('type')?.value !== 'ROOT'">
+        <label>Issuer certificate</label>
+
+        <select formControlName="issuerCertificateId">
+          <option [ngValue]="null">Select issuer</option>
+
+          <!-- <option *ngFor="let i of issuers" [ngValue]="i.id">
+            {{ i.subject }}
+          </option> -->
+          <option *ngFor="let i of issuers" [ngValue]="i.id">
+            {{ i.subject }} — {{ i.type }} — valid until {{ i.notAfter }}
+            {{ i.revoked ? "(REVOKED)" : "" }}
+          </option>
+        </select>
+      </div>
+      <div class="divider"></div>
+
+      <div class="divider"></div>
+
+      <div class="extensions-card">
+        <h4 class="extensions-title">Extensions</h4>
+
+        <!-- PathLen -->
+        <div
+          class="extension-group"
+          *ngIf="issueForm.get('type')?.value !== 'END_ENTITY'"
+        >
+          <label class="extension-label">Path Length</label>
+
+          <input
+            type="number"
+            formControlName="pathLen"
+            min="0"
+            class="extension-input"
+          />
+
+          <div class="note muted">
+            Maximum number of intermediate CAs that can follow.
+          </div>
+        </div>
+
+        <!-- KeyUsage -->
+        <div class="extension-group">
+          <label class="extension-label">Key Usage</label>
+
+          <!-- CA -->
+          <div
+            class="checkbox-grid"
+            *ngIf="issueForm.get('type')?.value !== 'END_ENTITY'"
+          >
+            <label class="checkbox-card" *ngFor="let opt of caKeyUsageOptions">
+              <input
+                type="checkbox"
+                [checked]="isKeyUsageSelected(opt.value)"
+                (change)="onKeyUsageChange($event, opt.value)"
+              />
+              <span>{{ opt.label }}</span>
+            </label>
+          </div>
+
+          <!-- EE -->
+          <div
+            class="checkbox-grid"
+            *ngIf="issueForm.get('type')?.value === 'END_ENTITY'"
+          >
+            <label class="checkbox-card" *ngFor="let opt of eeKeyUsageOptions">
+              <input
+                type="checkbox"
+                [checked]="isKeyUsageSelected(opt.value)"
+                (change)="onKeyUsageChange($event, opt.value)"
+              />
+              <span>{{ opt.label }}</span>
+            </label>
+          </div>
+
+          <div class="note muted">
+            Defaults are preselected based on certificate type.
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="grid-3">
+        <div class="field">
+          <label>Common name (CN)</label>
+          <input formControlName="cn" placeholder="e.g. My CA Server" />
+        </div>
+
+        <div class="field">
+          <label>Organization (O)</label>
+          <input formControlName="o" placeholder="Organization" />
+        </div>
+
+        <div class="field">
+          <label>Country (C)</label>
+          <input formControlName="c" placeholder="RS" />
+        </div>
+      </div>
+    </form>
+    <div class="form-error" *ngIf="message">
+      {{ message }}
+    </div>
+    <div class="modal-actions">
+      <button class="btn cancel" (click)="closeIssueModal()">Cancel</button>
+
+      <button class="btn primary" (click)="issueCertificate()">
+        Issue certificate
+      </button>
+    </div>
+  </div>
+</div>

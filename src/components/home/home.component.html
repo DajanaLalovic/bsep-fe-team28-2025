@@ -1,1 +1,54 @@
-<p>HOME</p>
+<div class="container">
+  <!-- ADMIN DASHBOARD -->
+  <div *ngIf="isAdmin$ | async">
+    <h2>Administrator Dashboard</h2>
+
+    <div class="card-grid">
+      <button class="card" routerLink="/issue/root">
+        Issue Root Certificate
+      </button>
+
+      <button class="card" routerLink="/issue/intermediate">
+        Issue Intermediate Certificate
+      </button>
+
+      <button class="card" routerLink="/issue/ee">
+        Issue End-Entity Certificate
+      </button>
+
+      <button class="card" routerLink="/my-certificates">
+        View All Certificates
+      </button>
+    </div>
+  </div>
+
+  <!-- CA USER DASHBOARD -->
+  <div *ngIf="isCaUser$ | async">
+    <h2>CA Dashboard</h2>
+
+    <div class="card-grid">
+      <button class="card" routerLink="/issue/intermediate">
+        Issue Intermediate
+      </button>
+
+      <button class="card" routerLink="/issue/ee">Issue End-Entity</button>
+
+      <button class="card">My Certificates</button>
+
+      <button class="card">Manage Templates</button>
+    </div>
+  </div>
+
+  <!-- CLIENT DASHBOARD -->
+  <div *ngIf="isClient$ | async">
+    <h2>Client Dashboard</h2>
+
+    <div class="card-grid">
+      <button class="card" routerLink="/upload-csr">Upload CSR</button>
+
+      <button class="card" routerLink="/my-certificates">
+        My Certificates
+      </button>
+    </div>
+  </div>
+</div>

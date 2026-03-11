@@ -1,0 +1,76 @@
+<div class="container">
+  <h2>Upload CSR</h2>
+
+  <form class="card" [formGroup]="form" (ngSubmit)="submit()">
+    <label class="label">
+      Issuer certificate (CA)
+      <select class="input" formControlName="issuerCertificateId">
+        <option [ngValue]="null" disabled selected>Select issuer</option>
+        <option *ngFor="let c of issuers" [ngValue]="c.id">
+          #{{ c.id }} {{ c.subject || "" }}
+        </option>
+      </select>
+      <span class="hint" *ngIf="loadingIssuers">Loading...</span>
+    </label>
+
+    <label class="label">
+      Validity (days)
+      <input
+        class="input validity-input"
+        type="number"
+        formControlName="validityDays"
+        min="1"
+      />
+    </label>
+
+    <div class="divider"></div>
+
+    <label class="label">
+      CSR file (.pem/.csr)
+      <div class="file-wrapper">
+        <input
+          class="file-input"
+          type="file"
+          (change)="onCsrSelected($event)"
+          accept=".pem,.csr"
+        />
+      </div>
+      <span class="hint" *ngIf="csrFile">Selected: {{ csrFile.name }}</span>
+    </label>
+
+    <button
+      class="btn"
+      type="submit"
+      [disabled]="submitting || loadingIssuers || !csrFile"
+    >
+      {{ submitting ? "Submitting..." : "Submit" }}
+    </button>
+
+    <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
+  </form>
+
+  <div class="result" *ngIf="issued">
+    <h3>Issued certificate</h3>
+
+    <!-- <div class="row"><b>ID:</b> {{ issued.id }}</div> -->
+    <!-- <div class="row"><b>Serial:</b> {{ issued.serialNumber }}</div> -->
+    <div class="row"><b>Subject DN:</b> {{ issued.subjectDn }}</div>
+    <div class="row"><b>Issuer DN:</b> {{ issued.issuerDn }}</div>
+    <div class="row"><b>Not before:</b> {{ issued.notBefore }}</div>
+    <div class="row"><b>Not after:</b> {{ issued.notAfter }}</div>
+
+    <button
+      class="btn"
+      type="button"
+      (click)="downloadPem()"
+      [disabled]="downloading"
+    >
+      {{ downloading ? "Downloading..." : "Download PEM" }}
+    </button>
+
+    <details class="pem">
+      <summary>Show PEM</summary>
+      <pre>{{ issued.certificatePem }}</pre>
+    </details>
+  </div>
+</div>

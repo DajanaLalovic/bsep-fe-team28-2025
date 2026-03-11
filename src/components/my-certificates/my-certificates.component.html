@@ -1,0 +1,57 @@
+<div class="container">
+  <h2 *ngIf="authStore.isAdmin$ | async; else myTitle">All Certificates</h2>
+  <ng-template #myTitle>
+    <h2>My Certificates</h2>
+  </ng-template>
+  <p class="hint" *ngIf="loading">Loading...</p>
+  <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+  <div class="list" *ngIf="!loading">
+    <div class="cert-card" *ngFor="let c of certs">
+      <div class="rows">
+        <div class="row"><b>Subject:</b> {{ c.subject }}</div>
+        <div class="row"><b>Issuer:</b> {{ c.issuer }}</div>
+        <div class="row" *ngIf="authStore.isAdmin$ | async">
+          <b>Type:</b> {{ c.type }}
+        </div>
+
+        <div class="row"><b>Valid until:</b> {{ c.notAfter }}</div>
+        <div class="row">
+          <b>Status:</b>
+          <span class="status" [class.revoked]="c.revoked">
+            {{ c.revoked ? "REVOKED" : "ACTIVE" }}
+          </span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="button" (click)="downloadPem(c.id)">
+          Download PEM
+        </button>
+        <button class="btn" type="button" (click)="downloadDer(c.id)">
+          Download DER
+        </button>
+      </div>
+
+      <div class="revoke" *ngIf="!c.revoked">
+        <select class="select" [formControl]="reasonForm.controls.reason">
+          <option [ngValue]="null" disabled>-- Select reason --</option>
+          <option *ngFor="let r of reasons" [ngValue]="r.value">
+            {{ r.label }}
+          </option>
+        </select>
+
+        <button
+          class="btn btn-danger"
+          type="button"
+          (click)="revoke(c.id)"
+          [disabled]="revokingId === c.id"
+        >
+          {{ revokingId === c.id ? "Revoking..." : "Revoke" }}
+        </button>
+      </div>
+    </div>
+
+    <p class="hint" *ngIf="certs.length === 0">No certificates.</p>
+  </div>
+</div>

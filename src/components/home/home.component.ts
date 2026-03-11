@@ -1,11 +1,19 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgIf, AsyncPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { AuthStore } from 'src/services/auth.store';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NgIf, AsyncPipe, RouterLink],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
 })
-export class HomeComponent {}
+export class HomeComponent {
+  isAdmin$ = this.authStore.isAdmin$;
+  isCaUser$ = this.authStore.isCaUser$;
+  isClient$ = this.authStore.isClient$;
+
+  constructor(private authStore: AuthStore) {}
+}
