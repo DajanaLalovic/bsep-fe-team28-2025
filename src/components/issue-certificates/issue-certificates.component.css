@@ -1,0 +1,315 @@
+.page {
+  max-width: 980px;
+  margin: 32px auto;
+  padding: 0 16px 32px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #101828;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #667085;
+}
+
+.issue-card {
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(16, 24, 40, 0.08);
+  padding: 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #344054;
+  margin-bottom: 8px;
+}
+
+.field input,
+.field select,
+.extension-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #101828;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.field input:focus,
+.field select:focus,
+.extension-input:focus {
+  border-color: #4c7dff;
+  box-shadow: 0 0 0 4px rgba(76, 125, 255, 0.12);
+}
+
+.invalid-input {
+  border-color: #d92d20 !important;
+  background: #fff7f7;
+  box-shadow: 0 0 0 4px rgba(217, 45, 32, 0.08);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 120px;
+  gap: 16px;
+}
+
+.divider {
+  height: 1px;
+  background: #eaecf0;
+  margin: 2px 0;
+}
+
+.extensions-card {
+  background: #f8fafc;
+  border: 1px solid #e4e7ec;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.extensions-title {
+  margin: 0 0 18px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #101828;
+}
+
+.extension-group {
+  margin-bottom: 22px;
+}
+
+.extension-group:last-child {
+  margin-bottom: 0;
+}
+
+.extension-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.pathlen-wrap {
+  max-width: 320px;
+}
+
+.extension-input {
+  width: 100%;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.checkbox-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e4e7ec;
+  background: #fff;
+  cursor: pointer;
+  color: #344054;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.checkbox-card:hover {
+  background: #f8fbff;
+  border-color: #c7d7fe;
+  box-shadow: 0 6px 16px rgba(76, 125, 255, 0.08);
+}
+
+.checkbox-card input {
+  margin: 0;
+}
+
+.field-hint {
+  margin-top: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.hint-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #e0ecff;
+  color: #3b66d6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.hint-text {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #475467;
+}
+
+.field-error {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #b42318;
+}
+
+.field-error span {
+  display: block;
+}
+
+.form-error {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff1f2;
+  border: 1px solid #fecdca;
+  color: #b42318;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    transform 0.04s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.btn:hover {
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.08);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn.primary {
+  background: #4c7dff;
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background: #3f6ee9;
+}
+
+.btn.secondary {
+  background: #fff;
+  color: #344054;
+  border: 1px solid #d0d5dd;
+}
+
+.btn.secondary:hover {
+  background: #f9fafb;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .grid-2,
+  .grid-3,
+  .checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .issue-card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .page-header h2 {
+    font-size: 22px;
+  }
+
+  .pathlen-wrap {
+    max-width: 100%;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions .btn {
+    width: 100%;
+  }
+}

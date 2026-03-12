@@ -1,7 +1,7 @@
 <div class="container">
   <!-- ADMIN DASHBOARD -->
   <div *ngIf="isAdmin$ | async">
-    <h2>Administrator Dashboard</h2>
+    <!-- <h2>Administrator Dashboard</h2> -->
 
     <div class="card-grid">
       <button class="card" routerLink="/issue/root">
@@ -24,7 +24,7 @@
 
   <!-- CA USER DASHBOARD -->
   <div *ngIf="isCaUser$ | async">
-    <h2>CA Dashboard</h2>
+    <!-- <h2>CA Dashboard</h2> -->
 
     <div class="card-grid">
       <button class="card" routerLink="/issue/intermediate">
@@ -41,7 +41,7 @@
 
   <!-- CLIENT DASHBOARD -->
   <div *ngIf="isClient$ | async">
-    <h2>Client Dashboard</h2>
+    <!-- <h2>Client Dashboard</h2> -->
 
     <div class="card-grid">
       <button class="card" routerLink="/upload-csr">Upload CSR</button>

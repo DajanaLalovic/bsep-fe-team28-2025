@@ -1,0 +1,225 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2>{{ pageTitle }}</h2>
+      <p class="subtitle" *ngIf="ownerUserId">
+        Issuing certificate for selected user ID {{ ownerUserId }}
+      </p>
+      <p class="subtitle" *ngIf="!ownerUserId">
+        Fill in certificate details and extensions
+      </p>
+    </div>
+
+    <button class="btn secondary" routerLink="/">Back</button>
+  </div>
+
+  <div class="issue-card">
+    <form [formGroup]="issueForm" class="form">
+      <div class="grid-2">
+        <div class="field">
+          <label>Certificate type</label>
+          <select formControlName="type">
+            <option value="INTERMEDIATE">INTERMEDIATE (CA)</option>
+            <option value="END_ENTITY">END ENTITY</option>
+            <option value="ROOT">ROOT</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Validity (days)</label>
+          <input
+            type="number"
+            formControlName="validityDays"
+            min="1"
+            [class.invalid-input]="
+              (issueForm.get('validityDays')?.touched ||
+                issueForm.get('validityDays')?.dirty) &&
+              issueForm.get('validityDays')?.invalid
+            "
+          />
+
+          <div
+            class="field-error"
+            *ngIf="
+              (issueForm.get('validityDays')?.touched ||
+                issueForm.get('validityDays')?.dirty) &&
+              issueForm.get('validityDays')?.errors
+            "
+          >
+            <span *ngIf="issueForm.get('validityDays')?.errors?.['required']">
+              Validity is required.
+            </span>
+            <span *ngIf="issueForm.get('validityDays')?.errors?.['min']">
+              Validity must be at least 1 day.
+            </span>
+            <span
+              *ngIf="issueForm.get('validityDays')?.errors?.['issuerExceeded']"
+            >
+              Certificate cannot be valid longer than the selected issuer
+              certificate.
+            </span>
+            <span
+              *ngIf="issueForm.get('validityDays')?.errors?.['issuerExpired']"
+            >
+              Selected issuer certificate is already expired.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" *ngIf="issueForm.get('type')?.value !== 'ROOT'">
+        <label>Issuer certificate</label>
+        <select formControlName="issuerCertificateId">
+          <option [ngValue]="null">Select issuer</option>
+          <option *ngFor="let i of issuers" [ngValue]="i.id">
+            {{ i.subject }} — {{ i.type }} — valid until {{ i.notAfter }}
+          </option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="extensions-card">
+        <h4 class="extensions-title">Extensions</h4>
+
+        <div
+          class="extension-group"
+          *ngIf="issueForm.get('type')?.value !== 'END_ENTITY'"
+        >
+          <label class="extension-label">Path Length</label>
+
+          <div class="pathlen-wrap">
+            <input
+              type="number"
+              formControlName="pathLen"
+              min="0"
+              class="extension-input"
+              [class.invalid-input]="
+                (issueForm.get('pathLen')?.touched ||
+                  issueForm.get('pathLen')?.dirty) &&
+                issueForm.get('pathLen')?.invalid
+              "
+            />
+
+            <div
+              class="field-error"
+              *ngIf="
+                (issueForm.get('pathLen')?.touched ||
+                  issueForm.get('pathLen')?.dirty) &&
+                issueForm.get('pathLen')?.errors
+              "
+            >
+              <span
+                *ngIf="issueForm.get('pathLen')?.errors?.['backendPathLen']"
+              >
+                {{ message }}
+              </span>
+              <span
+                *ngIf="
+                  issueForm.get('pathLen')?.errors?.['issuerPathLenExceeded']
+                "
+              >
+                Path Length exceeds the issuer limit.
+              </span>
+              <span *ngIf="issueForm.get('pathLen')?.errors?.['required']">
+                Path Length is required for CA certificates.
+              </span>
+              <span *ngIf="issueForm.get('pathLen')?.errors?.['invalidNumber']">
+                Path Length must be a valid number.
+              </span>
+              <span *ngIf="issueForm.get('pathLen')?.errors?.['notInteger']">
+                Path Length must be a whole number.
+              </span>
+              <span *ngIf="issueForm.get('pathLen')?.errors?.['min']">
+                Path Length must be 0 or greater.
+              </span>
+            </div>
+
+            <div class="field-hint">
+              <span class="hint-icon">i</span>
+              <span class="hint-text">
+                Maximum number of intermediate CAs that can follow this
+                certificate.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="extension-group">
+          <label class="extension-label">Key Usage</label>
+
+          <div
+            class="checkbox-grid"
+            *ngIf="issueForm.get('type')?.value !== 'END_ENTITY'"
+          >
+            <label class="checkbox-card" *ngFor="let opt of caKeyUsageOptions">
+              <input
+                type="checkbox"
+                [checked]="isKeyUsageSelected(opt.value)"
+                (change)="onKeyUsageChange($event, opt.value)"
+              />
+              <span>{{ opt.label }}</span>
+            </label>
+          </div>
+
+          <div
+            class="checkbox-grid"
+            *ngIf="issueForm.get('type')?.value === 'END_ENTITY'"
+          >
+            <label class="checkbox-card" *ngFor="let opt of eeKeyUsageOptions">
+              <input
+                type="checkbox"
+                [checked]="isKeyUsageSelected(opt.value)"
+                (change)="onKeyUsageChange($event, opt.value)"
+              />
+              <span>{{ opt.label }}</span>
+            </label>
+          </div>
+
+          <div class="field-hint">
+            <span class="hint-icon">i</span>
+            <span class="hint-text">
+              Key Usage values are automatically selected depending on the
+              certificate type.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="grid-3">
+        <div class="field">
+          <label>Common name (CN)</label>
+          <input formControlName="cn" placeholder="e.g. My CA Server" />
+        </div>
+
+        <div class="field">
+          <label>Organization (O)</label>
+          <input formControlName="o" placeholder="Organization" />
+        </div>
+
+        <div class="field">
+          <label>Country (C)</label>
+          <input formControlName="c" placeholder="RS" />
+        </div>
+      </div>
+
+      <div
+        class="form-error"
+        *ngIf="message && !issueForm.get('pathLen')?.errors?.['backendPathLen']"
+      >
+        {{ message }}
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn secondary" routerLink="/">
+          Cancel
+        </button>
+        <button type="button" class="btn primary" (click)="issueCertificate()">
+          Issue certificate
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

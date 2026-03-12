@@ -11,6 +11,8 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -98,12 +100,39 @@ export class AdminPanelComponent implements OnInit {
       o: this.fb.control(''),
       c: this.fb.nonNullable.control('RS'),
 
-      pathLen: this.fb.control<number | null>(0),
+      // pathLen: this.fb.control<number | null>(0),
+      pathLen: this.fb.control<number | null>(0, [
+        this.pathLenValidator.bind(this),
+      ]),
 
       keyUsage: this.fb.nonNullable.control<string[]>([
         'KEY_CERT_SIGN',
         'CRL_SIGN',
       ]),
+    });
+
+    this.issueForm.get('validityDays')?.valueChanges.subscribe(() => {
+      this.validateValidityAgainstIssuer();
+    });
+
+    this.issueForm.get('issuerCertificateId')?.valueChanges.subscribe(() => {
+      this.validateValidityAgainstIssuer();
+    });
+
+    this.issueForm.get('type')?.valueChanges.subscribe(() => {
+      this.validateValidityAgainstIssuer();
+    });
+
+    this.issueForm.get('pathLen')?.valueChanges.subscribe(() => {
+      this.validatePathLenAgainstIssuer();
+    });
+
+    this.issueForm.get('issuerCertificateId')?.valueChanges.subscribe(() => {
+      this.validatePathLenAgainstIssuer();
+    });
+
+    this.issueForm.get('type')?.valueChanges.subscribe(() => {
+      this.validatePathLenAgainstIssuer();
     });
 
     //predefinisano-sta se uglavnom kroisti
@@ -133,14 +162,14 @@ export class AdminPanelComponent implements OnInit {
 
       if (type === 'ROOT') {
         issuerCtrl.setValue(null);
-        pathLenCtrl.setValidators([Validators.required, Validators.min(0)]);
+        pathLenCtrl.setValidators([this.pathLenValidator.bind(this)]);
         pathLenCtrl.setValue(pathLenCtrl.value ?? 0);
 
         keyUsageCtrl.setValue(['KEY_CERT_SIGN', 'CRL_SIGN']);
       }
 
       if (type === 'INTERMEDIATE') {
-        pathLenCtrl.setValidators([Validators.required, Validators.min(0)]);
+        pathLenCtrl.setValidators([this.pathLenValidator.bind(this)]);
         pathLenCtrl.setValue(pathLenCtrl.value ?? 0);
 
         keyUsageCtrl.setValue(['KEY_CERT_SIGN', 'CRL_SIGN']);
@@ -153,7 +182,8 @@ export class AdminPanelComponent implements OnInit {
         keyUsageCtrl.setValue(['DIGITAL_SIGNATURE', 'KEY_ENCIPHERMENT']);
       }
 
-      pathLenCtrl.updateValueAndValidity();
+      pathLenCtrl.updateValueAndValidity({ emitEvent: false });
+      this.validatePathLenAgainstIssuer();
     };
 
     applyTypeRules(this.issueForm.get('type')!.value);
@@ -161,6 +191,67 @@ export class AdminPanelComponent implements OnInit {
     this.issueForm
       .get('type')!
       .valueChanges.subscribe((t) => applyTypeRules(t as CertificateType));
+  }
+
+  private validateValidityAgainstIssuer() {
+    const type = this.issueForm.get('type')?.value;
+    const issuerId = this.issueForm.get('issuerCertificateId')?.value;
+    const validityCtrl = this.issueForm.get('validityDays');
+
+    if (!validityCtrl) return;
+
+    const currentErrors = { ...(validityCtrl.errors || {}) };
+    delete currentErrors['issuerExceeded'];
+    delete currentErrors['issuerExpired'];
+
+    if (type === 'ROOT' || !issuerId) {
+      validityCtrl.setErrors(
+        Object.keys(currentErrors).length ? currentErrors : null,
+      );
+      return;
+    }
+
+    const issuer = this.issuers.find((i) => i.id === issuerId);
+    if (!issuer || !issuer.notAfter) {
+      validityCtrl.setErrors(
+        Object.keys(currentErrors).length ? currentErrors : null,
+      );
+      return;
+    }
+
+    const validityDays = Number(validityCtrl.value);
+    if (!validityDays || validityDays < 1) {
+      validityCtrl.setErrors(
+        Object.keys(currentErrors).length ? currentErrors : null,
+      );
+      return;
+    }
+
+    const now = new Date();
+    const issuerNotAfter = new Date(issuer.notAfter);
+
+    if (issuerNotAfter <= now) {
+      validityCtrl.setErrors({
+        ...currentErrors,
+        issuerExpired: true,
+      });
+      return;
+    }
+
+    const childNotAfter = new Date(now);
+    childNotAfter.setDate(childNotAfter.getDate() + validityDays);
+
+    if (childNotAfter > issuerNotAfter) {
+      validityCtrl.setErrors({
+        ...currentErrors,
+        issuerExceeded: true,
+      });
+      return;
+    }
+
+    validityCtrl.setErrors(
+      Object.keys(currentErrors).length ? currentErrors : null,
+    );
   }
 
   isKeyUsageSelected(value: string): boolean {
@@ -234,7 +325,11 @@ export class AdminPanelComponent implements OnInit {
   }
 
   issueCertificate() {
-    if (this.issueForm.invalid) return;
+    if (this.issueForm.invalid) {
+      this.issueForm.markAllAsTouched();
+      this.message = 'Please correct the form errors.';
+      return;
+    }
 
     const v = this.issueForm.getRawValue();
     if (!v.keyUsage || v.keyUsage.length === 0) {
@@ -272,7 +367,23 @@ export class AdminPanelComponent implements OnInit {
         this.router.navigate(['/my-certificates']);
       },
       error: (err) => {
-        this.message = err?.error?.message || 'Error issuing certificate';
+        console.log('ISSUE CERT ERROR:', err);
+        console.log('ERR.ERROR:', err?.error);
+
+        const backendMessage =
+          err?.error?.message ||
+          (typeof err?.error === 'string' ? err.error : null) ||
+          err?.message ||
+          'Error issuing certificate';
+
+        this.message = backendMessage;
+
+        if (backendMessage.toLowerCase().includes('pathlen')) {
+          this.issueForm.get('pathLen')?.setErrors({
+            ...(this.issueForm.get('pathLen')?.errors || {}),
+            backendPathLen: true,
+          });
+        }
       },
     });
   }
@@ -284,6 +395,89 @@ export class AdminPanelComponent implements OnInit {
   closeModal() {
     this.showModal = false;
     this.form.reset();
+  }
+  private pathLenValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+
+    if (value === null || value === undefined || value === '') {
+      return { required: true };
+    }
+
+    const num = Number(value);
+
+    if (Number.isNaN(num)) {
+      return { invalidNumber: true };
+    }
+
+    if (!Number.isInteger(num)) {
+      return { notInteger: true };
+    }
+
+    if (num < 0) {
+      return { min: true };
+    }
+
+    return null;
+  }
+
+  private validatePathLenAgainstIssuer() {
+    const type = this.issueForm.get('type')?.value;
+    const issuerId = this.issueForm.get('issuerCertificateId')?.value;
+    const pathLenCtrl = this.issueForm.get('pathLen');
+
+    if (!pathLenCtrl) return;
+
+    const currentErrors = { ...(pathLenCtrl.errors || {}) };
+    delete currentErrors['issuerPathLenExceeded'];
+
+    if (type === 'ROOT' || type === 'END_ENTITY' || !issuerId) {
+      pathLenCtrl.setErrors(
+        Object.keys(currentErrors).length ? currentErrors : null,
+      );
+      return;
+    }
+
+    const issuer = this.issuers.find((i) => i.id === issuerId);
+    if (!issuer) {
+      pathLenCtrl.setErrors(
+        Object.keys(currentErrors).length ? currentErrors : null,
+      );
+      return;
+    }
+
+    const childPathLen = Number(pathLenCtrl.value);
+
+    if (
+      pathLenCtrl.value === null ||
+      pathLenCtrl.value === undefined ||
+      Number.isNaN(childPathLen)
+    ) {
+      pathLenCtrl.setErrors(
+        Object.keys(currentErrors).length ? currentErrors : null,
+      );
+      return;
+    }
+
+    const issuerPathLen = (issuer as any).pathLen;
+
+    if (issuerPathLen === null || issuerPathLen === undefined) {
+      pathLenCtrl.setErrors(
+        Object.keys(currentErrors).length ? currentErrors : null,
+      );
+      return;
+    }
+
+    if (childPathLen > issuerPathLen - 1) {
+      pathLenCtrl.setErrors({
+        ...currentErrors,
+        issuerPathLenExceeded: true,
+      });
+      return;
+    }
+
+    pathLenCtrl.setErrors(
+      Object.keys(currentErrors).length ? currentErrors : null,
+    );
   }
 
   create() {
@@ -305,6 +499,7 @@ export class AdminPanelComponent implements OnInit {
     });
     this.loadCaUsers();
   }
+
   //   toggleKeyUsage(value: string, event: any) {
   //     const usages = this.issueForm.value.keyUsage || [];
 

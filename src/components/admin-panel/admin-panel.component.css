@@ -348,3 +348,79 @@
   color: #b42318;
   font-size: 14px;
 }
+.field input,
+.field select,
+.extension-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d6d9e0;
+  outline: none;
+  background: #fff;
+  font-size: 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.field input:focus,
+.field select:focus,
+.extension-input:focus {
+  border-color: #4c7dff;
+  box-shadow: 0 0 0 3px rgba(76, 125, 255, 0.12);
+}
+
+.invalid-input {
+  border-color: #d92d20 !important;
+  background: #fff7f7;
+  box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.08);
+}
+.field-hint {
+  margin-top: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.hint-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #e0ecff;
+  color: #3b66d6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.hint-text {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #475467;
+}
+.extension-group {
+  margin-bottom: 22px;
+}
+
+.extension-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #344054;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.extension-input {
+  width: 100%;
+  max-width: 220px;
+}

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthStore } from 'src/services/auth.store';
+import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import {
   CertificateApiService,
@@ -10,7 +11,7 @@ import {
 @Component({
   selector: 'app-my-certificates',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './my-certificates.component.html',
   styleUrls: ['./my-certificates.component.css'],
 })
