@@ -8,7 +8,7 @@ import { LoginComponent } from 'src/components/login/login.component';
 import { RegisterComponent } from 'src/components/register/register.component';
 import { ResetPasswordComponent } from 'src/components/reset-password/reset-password.component';
 import { SessionsComponent } from 'src/components/sessions/sessions.component';
-import { IssueCertificateComponent } from 'src/components/certificates/issue-certificate/issue-certificate.component';
+import { IssueCertificateComponent } from 'src/components/issue-certificates/issue-certificates.component';
 import { MyCertificatesComponent } from 'src/components/my-certificates/my-certificates.component';
 import { AdminGuard } from 'src/utils/admin.guard';
 import { CaUserGuard } from 'src/utils/ca-user.guard';

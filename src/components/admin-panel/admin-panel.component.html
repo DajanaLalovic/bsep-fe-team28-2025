@@ -128,7 +128,46 @@
 
         <div class="field">
           <label>Validity (days)</label>
-          <input type="number" formControlName="validityDays" />
+          <input
+            type="number"
+            formControlName="validityDays"
+            min="1"
+            [class.invalid-input]="
+              (issueForm.get('validityDays')?.touched ||
+                issueForm.get('validityDays')?.dirty) &&
+              issueForm.get('validityDays')?.invalid
+            "
+          />
+          <div
+            class="field-error"
+            *ngIf="
+              issueForm.get('validityDays')?.touched &&
+              issueForm.get('validityDays')?.invalid
+            "
+          >
+            <span *ngIf="issueForm.get('validityDays')?.errors?.['required']">
+              Validity is required.
+            </span>
+
+            <span *ngIf="issueForm.get('validityDays')?.errors?.['min']">
+              Validity must be at least 1 day.
+            </span>
+          </div>
+
+          <div
+            class="field-error"
+            *ngIf="issueForm.get('validityDays')?.errors?.['issuerExceeded']"
+          >
+            Certificate cannot be valid longer than the selected issuer
+            certificate.
+          </div>
+        </div>
+
+        <div
+          class="field-error"
+          *ngIf="issueForm.get('validityDays')?.errors?.['issuerExpired']"
+        >
+          Selected issuer certificate is already expired.
         </div>
       </div>
 
@@ -159,17 +198,64 @@
           class="extension-group"
           *ngIf="issueForm.get('type')?.value !== 'END_ENTITY'"
         >
-          <label class="extension-label">Path Length</label>
+          <label class="extension-label" for="pathLen">Path Length</label>
 
           <input
+            id="pathLen"
             type="number"
             formControlName="pathLen"
             min="0"
             class="extension-input"
+            [class.invalid-input]="
+              (issueForm.get('pathLen')?.touched ||
+                issueForm.get('pathLen')?.dirty) &&
+              issueForm.get('pathLen')?.invalid
+            "
           />
 
-          <div class="note muted">
-            Maximum number of intermediate CAs that can follow.
+          <div
+            class="field-error"
+            *ngIf="
+              (issueForm.get('pathLen')?.touched ||
+                issueForm.get('pathLen')?.dirty) &&
+              issueForm.get('pathLen')?.errors
+            "
+          >
+            <span *ngIf="issueForm.get('pathLen')?.errors?.['backendPathLen']">
+              {{ message }}
+            </span>
+
+            <span
+              *ngIf="
+                issueForm.get('pathLen')?.errors?.['issuerPathLenExceeded']
+              "
+            >
+              Path Length exceeds the issuer limit.
+            </span>
+
+            <span *ngIf="issueForm.get('pathLen')?.errors?.['required']">
+              Path Length is required for CA certificates.
+            </span>
+
+            <span *ngIf="issueForm.get('pathLen')?.errors?.['invalidNumber']">
+              Path Length must be a valid number.
+            </span>
+
+            <span *ngIf="issueForm.get('pathLen')?.errors?.['notInteger']">
+              Path Length must be a whole number.
+            </span>
+
+            <span *ngIf="issueForm.get('pathLen')?.errors?.['min']">
+              Path Length must be 0 or greater.
+            </span>
+          </div>
+
+          <div class="field-hint">
+            <span class="hint-icon">i</span>
+            <span class="hint-text">
+              Maximum number of intermediate CAs that can follow this
+              certificate.
+            </span>
           </div>
         </div>
 
@@ -207,8 +293,12 @@
             </label>
           </div>
 
-          <div class="note muted">
-            Defaults are preselected based on certificate type.
+          <div class="field-hint">
+            <span class="hint-icon">i</span>
+            <span class="hint-text">
+              Key Usage values are automatically selected depending on the
+              certificate type.
+            </span>
           </div>
         </div>
       </div>
@@ -232,9 +322,9 @@
         </div>
       </div>
     </form>
-    <div class="form-error" *ngIf="message">
+    <!-- <div class="form-error" *ngIf="message">
       {{ message }}
-    </div>
+    </div> -->
     <div class="modal-actions">
       <button class="btn cancel" (click)="closeIssueModal()">Cancel</button>
 
