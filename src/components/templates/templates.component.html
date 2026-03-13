@@ -1,0 +1,132 @@
+<div class="templates-page">
+  <h2>Manage Templates</h2>
+
+  <div class="message" *ngIf="message">
+    {{ message }}
+  </div>
+  <button class="btn secondary" routerLink="/">Back</button>
+
+  <div class="templates-layout">
+    <div class="form-card">
+      <h3>Create Template</h3>
+
+      <form [formGroup]="templateForm" (ngSubmit)="createTemplate()">
+        <div class="form-group">
+          <label>Template Name</label>
+          <input type="text" formControlName="name" />
+          <small *ngIf="name?.touched && name?.invalid"
+            >Template name is required.</small
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Issuer Certificate</label>
+          <select formControlName="issuerCertificateId">
+            <option [ngValue]="null">Select issuer</option>
+            <option *ngFor="let issuer of issuers" [ngValue]="issuer.id">
+              {{ issuer.subject }}
+            </option>
+          </select>
+          <small
+            *ngIf="issuerCertificateId?.touched && issuerCertificateId?.invalid"
+          >
+            Issuer is required.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>CN Regex</label>
+          <input
+            type="text"
+            formControlName="cnRegex"
+            placeholder=".*\.ftn\.com"
+          />
+          <small *ngIf="cnRegex?.touched && cnRegex?.invalid"
+            >CN regex is required.</small
+          >
+        </div>
+
+        <div class="form-group">
+          <label>SAN Regex</label>
+          <input
+            type="text"
+            formControlName="sanRegex"
+            placeholder=".*\.ftn\.com"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Max TTL Days</label>
+          <input type="number" formControlName="maxTtlDays" />
+          <small *ngIf="maxTtlDays?.touched && maxTtlDays?.invalid">
+            TTL must be greater than 0.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Key Usage</label>
+          <div class="checkbox-group">
+            <label *ngFor="let option of caKeyUsageOptions">
+              <input
+                type="checkbox"
+                [checked]="isKeyUsageSelected(option.value)"
+                (change)="onKeyUsageChange($event, option.value)"
+              />
+              {{ option.label }}
+            </label>
+
+            <label *ngFor="let option of eeKeyUsageOptions">
+              <input
+                type="checkbox"
+                [checked]="isKeyUsageSelected(option.value)"
+                (change)="onKeyUsageChange($event, option.value)"
+              />
+              {{ option.label }}
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Extended Key Usage</label>
+          <div class="checkbox-group">
+            <label *ngFor="let option of ekuOptions">
+              <input
+                type="checkbox"
+                [checked]="isEkuSelected(option.value)"
+                (change)="onEkuChange($event, option.value)"
+              />
+              {{ option.label }}
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="loading">
+          {{ loading ? "Saving..." : "Create Template" }}
+        </button>
+      </form>
+    </div>
+
+    <div class="list-card">
+      <h3>Existing Templates</h3>
+
+      <div *ngIf="templates.length === 0" class="empty-state">
+        No templates found.
+      </div>
+
+      <div class="template-item" *ngFor="let template of templates">
+        <h4>{{ template.name }}</h4>
+        <p><strong>Issuer:</strong> {{ template.issuerSubject }}</p>
+        <p><strong>CN Regex:</strong> {{ template.cnRegex }}</p>
+        <p><strong>SAN Regex:</strong> {{ template.sanRegex || "-" }}</p>
+        <p><strong>Max TTL:</strong> {{ template.maxTtlDays }} days</p>
+        <p>
+          <strong>Key Usage:</strong> {{ template.keyUsages.join(", ") || "-" }}
+        </p>
+        <p>
+          <strong>Extended Key Usage:</strong>
+          {{ template.extendedKeyUsages.join(", ") || "-" }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

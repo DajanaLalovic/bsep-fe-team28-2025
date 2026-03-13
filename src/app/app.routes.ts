@@ -10,6 +10,7 @@ import { ResetPasswordComponent } from 'src/components/reset-password/reset-pass
 import { SessionsComponent } from 'src/components/sessions/sessions.component';
 import { IssueCertificateComponent } from 'src/components/issue-certificates/issue-certificates.component';
 import { MyCertificatesComponent } from 'src/components/my-certificates/my-certificates.component';
+import { TemplatesComponent } from 'src/components/templates/templates.component';
 import { AdminGuard } from 'src/utils/admin.guard';
 import { CaUserGuard } from 'src/utils/ca-user.guard';
 import { ClientGuard } from 'src/utils/client.guard';
@@ -69,6 +70,11 @@ export const routes: Routes = [
     data: {
       certType: 'END_ENTITY',
     },
+  },
+  {
+    path: 'templates',
+    component: TemplatesComponent,
+    canActivate: [AuthGuard, FirstLoginGuard, CaUserGuard],
   },
 
   {

@@ -21,7 +21,7 @@
           <select formControlName="type">
             <option value="INTERMEDIATE">INTERMEDIATE (CA)</option>
             <option value="END_ENTITY">END ENTITY</option>
-            <option value="ROOT">ROOT</option>
+            <option *ngIf="!isCaUser" value="ROOT">ROOT</option>
           </select>
         </div>
 
@@ -75,6 +75,57 @@
             {{ i.subject }} — {{ i.type }} — valid until {{ i.notAfter }}
           </option>
         </select>
+      </div>
+
+      <div class="field" *ngIf="shouldShowTemplates()">
+        <label>Template</label>
+        <select formControlName="templateId">
+          <option [ngValue]="null">No template</option>
+          <option *ngFor="let t of templates" [ngValue]="t.id">
+            {{ t.name }}
+          </option>
+        </select>
+
+        <div class="field-hint" *ngIf="templates.length === 0">
+          <span class="hint-icon">i</span>
+          <span class="hint-text">
+            No templates are available for the selected issuer.
+          </span>
+        </div>
+      </div>
+
+      <div class="template-preview" *ngIf="selectedTemplate">
+        <h4>Selected Template</h4>
+
+        <div class="template-preview-grid">
+          <div><strong>Name:</strong> {{ selectedTemplate.name }}</div>
+          <div>
+            <strong>Issuer:</strong> {{ selectedTemplate.issuerSubject }}
+          </div>
+          <div><strong>CN Regex:</strong> {{ selectedTemplate.cnRegex }}</div>
+          <div>
+            <strong>SAN Regex:</strong> {{ selectedTemplate.sanRegex || "-" }}
+          </div>
+          <div>
+            <strong>Max TTL:</strong> {{ selectedTemplate.maxTtlDays }} days
+          </div>
+          <div>
+            <strong>Key Usage:</strong>
+            {{ selectedTemplate.keyUsages.join(", ") || "-" }}
+          </div>
+          <div>
+            <strong>Extended Key Usage:</strong>
+            {{ selectedTemplate.extendedKeyUsages.join(", ") || "-" }}
+          </div>
+        </div>
+
+        <div class="field-hint">
+          <span class="hint-icon">i</span>
+          <span class="hint-text">
+            Template values are used to prefill the form and will be validated
+            on the backend during certificate issuance.
+          </span>
+        </div>
       </div>
 
       <div class="divider"></div>
@@ -148,25 +199,11 @@
         <div class="extension-group">
           <label class="extension-label">Key Usage</label>
 
-          <div
-            class="checkbox-grid"
-            *ngIf="issueForm.get('type')?.value !== 'END_ENTITY'"
-          >
-            <label class="checkbox-card" *ngFor="let opt of caKeyUsageOptions">
-              <input
-                type="checkbox"
-                [checked]="isKeyUsageSelected(opt.value)"
-                (change)="onKeyUsageChange($event, opt.value)"
-              />
-              <span>{{ opt.label }}</span>
-            </label>
-          </div>
-
-          <div
-            class="checkbox-grid"
-            *ngIf="issueForm.get('type')?.value === 'END_ENTITY'"
-          >
-            <label class="checkbox-card" *ngFor="let opt of eeKeyUsageOptions">
+          <div class="checkbox-grid">
+            <label
+              class="checkbox-card"
+              *ngFor="let opt of getVisibleKeyUsageOptions()"
+            >
               <input
                 type="checkbox"
                 [checked]="isKeyUsageSelected(opt.value)"
@@ -191,12 +228,50 @@
       <div class="grid-3">
         <div class="field">
           <label>Common name (CN)</label>
-          <input formControlName="cn" placeholder="e.g. My CA Server" />
+          <input
+            formControlName="cn"
+            placeholder="e.g. My CA Server"
+            [class.invalid-input]="
+              (issueForm.get('cn')?.touched || issueForm.get('cn')?.dirty) &&
+              issueForm.get('cn')?.invalid
+            "
+          />
+
+          <div
+            class="field-error"
+            *ngIf="
+              (issueForm.get('cn')?.touched || issueForm.get('cn')?.dirty) &&
+              issueForm.get('cn')?.errors
+            "
+          >
+            <span *ngIf="issueForm.get('cn')?.errors?.['required']">
+              Common Name is required.
+            </span>
+
+            <span *ngIf="issueForm.get('cn')?.errors?.['templateCnMismatch']">
+              Common Name does not match the selected template rule.
+            </span>
+
+            <span *ngIf="issueForm.get('cn')?.errors?.['invalidTemplateRegex']">
+              Selected template contains an invalid CN regex.
+            </span>
+          </div>
+
+          <div class="field-hint" *ngIf="selectedTemplate?.cnRegex">
+            <span class="hint-icon">i</span>
+            <span class="hint-text">
+              CN must match template regex: {{ selectedTemplate?.cnRegex }}
+            </span>
+          </div>
         </div>
 
         <div class="field">
           <label>Organization (O)</label>
-          <input formControlName="o" placeholder="Organization" />
+          <input
+            formControlName="o"
+            placeholder="Organization"
+            [readonly]="isCaUser"
+          />
         </div>
 
         <div class="field">

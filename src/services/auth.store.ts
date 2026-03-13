@@ -10,6 +10,9 @@ export class AuthStore {
   private _isCaUser = new BehaviorSubject<boolean>(false);
   private _isClient = new BehaviorSubject<boolean>(false);
 
+  private _organization = new BehaviorSubject<string>('');
+  organization$: Observable<string> = this._organization.asObservable();
+
   isLoggedIn$: Observable<boolean> = this._isLoggedIn.asObservable();
   isAdmin$: Observable<boolean> = this._isAdmin.asObservable();
   isCaUser$: Observable<boolean> = this._isCaUser.asObservable();
@@ -25,9 +28,11 @@ export class AuthStore {
     let isAdmin = false;
     let isCaUser = false;
     let isClient = false;
+    let organization = '';
 
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1]));
+
       // isAdmin =
       //   Array.isArray(payload.roles) && payload.roles.includes('ADMINISTRATOR');
       if (Array.isArray(payload.roles)) {
@@ -35,12 +40,15 @@ export class AuthStore {
         isCaUser = payload.roles.includes('CA_USER');
         isClient = payload.roles.includes('CLIENT');
       }
+
+      organization = payload.organization || '';
     }
 
     this._isLoggedIn.next(loggedIn);
     this._isAdmin.next(isAdmin);
     this._isCaUser.next(isCaUser);
     this._isClient.next(isClient);
+    this._organization.next(organization);
   }
 
   logout() {
