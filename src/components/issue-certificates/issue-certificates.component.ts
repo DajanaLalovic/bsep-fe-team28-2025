@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { AuthStore } from 'src/services/auth.store';
 import {
   AbstractControl,
   FormBuilder,
@@ -14,6 +15,7 @@ import {
   CertificateListDto,
   CertificateType,
   IssueCertificateRequestDto,
+  CertificateTemplateDto,
 } from 'src/services/certificates-api.service';
 
 @Component({
@@ -27,7 +29,11 @@ export class IssueCertificateComponent implements OnInit {
   issueForm!: FormGroup;
   issuers: CertificateListDto[] = [];
   message = '';
-
+  isAdmin = false;
+  isCaUser = false;
+  organization = '';
+  templates: CertificateTemplateDto[] = [];
+  selectedTemplate: CertificateTemplateDto | null = null;
   pageTitle = 'Issue Certificate';
   certificateType: CertificateType = 'INTERMEDIATE';
   ownerUserId: number | null = null;
@@ -50,10 +56,22 @@ export class IssueCertificateComponent implements OnInit {
     private certApi: CertificateApiService,
     private route: ActivatedRoute,
     private router: Router,
+    private authStore: AuthStore,
   ) {}
 
   ngOnInit(): void {
+    this.authStore.isAdmin$.subscribe((v) => (this.isAdmin = v));
+    this.authStore.isCaUser$.subscribe((v) => (this.isCaUser = v));
+
     this.initForm();
+
+    this.authStore.organization$.subscribe((org) => {
+      this.organization = org;
+      if (this.isCaUser && org) {
+        this.issueForm.get('o')?.setValue(org);
+      }
+    });
+
     this.loadIssuers();
     this.readRouteContext();
     this.setupReactivity();
@@ -66,11 +84,15 @@ export class IssueCertificateComponent implements OnInit {
         Validators.required,
       ),
       issuerCertificateId: this.fb.control<number | null>(null),
+      templateId: this.fb.control<number | null>(null),
       validityDays: this.fb.nonNullable.control(365, [
         Validators.required,
         Validators.min(1),
       ]),
-      cn: this.fb.nonNullable.control('', Validators.required),
+      cn: this.fb.nonNullable.control('', [
+        Validators.required,
+        this.templateCnValidator,
+      ]),
       o: this.fb.control(''),
       c: this.fb.nonNullable.control('RS'),
       pathLen: this.fb.control<number | null>(0, [
@@ -83,6 +105,32 @@ export class IssueCertificateComponent implements OnInit {
     });
   }
 
+  getVisibleKeyUsageOptions(): { value: string; label: string }[] {
+    const type = this.issueForm.get('type')?.value;
+
+    const baseOptions =
+      type === 'END_ENTITY'
+        ? [...this.eeKeyUsageOptions]
+        : [...this.caKeyUsageOptions];
+
+    const templateValues = this.selectedTemplate?.keyUsages ?? [];
+
+    const missingOptions = templateValues
+      .filter((value) => !baseOptions.some((opt) => opt.value === value))
+      .map((value) => ({
+        value,
+        label: this.formatKeyUsageLabel(value),
+      }));
+
+    return [...baseOptions, ...missingOptions];
+  }
+  private formatKeyUsageLabel(value: string): string {
+    return value
+      .toLowerCase()
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
   private loadIssuers() {
     this.certApi.getIssuers().subscribe({
       next: (x) => {
@@ -98,6 +146,12 @@ export class IssueCertificateComponent implements OnInit {
   private readRouteContext() {
     this.route.data.subscribe((data) => {
       const certType = data['certType'] as CertificateType;
+
+      //ca user ne sme root da izda
+      if (this.isCaUser && certType === 'ROOT') {
+        this.router.navigate(['/']);
+        return;
+      }
 
       this.certificateType = certType;
 
@@ -126,15 +180,50 @@ export class IssueCertificateComponent implements OnInit {
       this.validateValidityAgainstIssuer();
     });
 
-    this.issueForm.get('issuerCertificateId')?.valueChanges.subscribe(() => {
-      this.validateValidityAgainstIssuer();
-      this.validatePathLenAgainstIssuer();
+    // this.issueForm.get('issuerCertificateId')?.valueChanges.subscribe(() => {
+    //   this.validateValidityAgainstIssuer();
+    //   this.validatePathLenAgainstIssuer();
+    // });
+    this.issueForm
+      .get('issuerCertificateId')
+      ?.valueChanges.subscribe((issuerId) => {
+        this.validateValidityAgainstIssuer();
+        this.validatePathLenAgainstIssuer();
+
+        const type = this.issueForm.get('type')?.value;
+
+        if (type !== 'ROOT' && issuerId) {
+          this.loadTemplatesByIssuer(Number(issuerId));
+        } else {
+          this.clearTemplateSelection();
+        }
+      });
+
+    this.issueForm.get('templateId')?.valueChanges.subscribe((templateId) => {
+      if (!templateId) {
+        this.selectedTemplate = null;
+        return;
+      }
+
+      const template = this.templates.find((t) => t.id === Number(templateId));
+      if (template) {
+        this.applyTemplate(template);
+      }
     });
 
     this.issueForm.get('type')?.valueChanges.subscribe((type) => {
       this.applyTypeRules(type as CertificateType);
       this.validateValidityAgainstIssuer();
       this.validatePathLenAgainstIssuer();
+
+      if (type === 'ROOT') {
+        this.clearTemplateSelection();
+      } else {
+        const issuerId = this.issueForm.get('issuerCertificateId')?.value;
+        if (issuerId) {
+          this.loadTemplatesByIssuer(Number(issuerId));
+        }
+      }
     });
 
     this.issueForm.get('pathLen')?.valueChanges.subscribe(() => {
@@ -146,26 +235,36 @@ export class IssueCertificateComponent implements OnInit {
     const pathLenCtrl = this.issueForm.get('pathLen');
     const issuerCtrl = this.issueForm.get('issuerCertificateId');
     const keyUsageCtrl = this.issueForm.get('keyUsage');
+    const templateId = this.issueForm.get('templateId')?.value;
 
     if (!pathLenCtrl || !issuerCtrl || !keyUsageCtrl) return;
 
     if (type === 'ROOT') {
       issuerCtrl.setValue(null);
+      this.issueForm.get('templateId')?.setValue(null);
       pathLenCtrl.setValidators([this.pathLenValidator.bind(this)]);
       pathLenCtrl.setValue(pathLenCtrl.value ?? 0);
-      keyUsageCtrl.setValue(['KEY_CERT_SIGN', 'CRL_SIGN']);
+      if (!templateId) {
+        keyUsageCtrl.setValue(['KEY_CERT_SIGN', 'CRL_SIGN']);
+      }
     }
 
     if (type === 'INTERMEDIATE') {
       pathLenCtrl.setValidators([this.pathLenValidator.bind(this)]);
       pathLenCtrl.setValue(pathLenCtrl.value ?? 0);
-      keyUsageCtrl.setValue(['KEY_CERT_SIGN', 'CRL_SIGN']);
+
+      if (!templateId) {
+        keyUsageCtrl.setValue(['KEY_CERT_SIGN', 'CRL_SIGN']);
+      }
     }
 
     if (type === 'END_ENTITY') {
       pathLenCtrl.clearValidators();
       pathLenCtrl.setValue(null);
-      keyUsageCtrl.setValue(['DIGITAL_SIGNATURE', 'KEY_ENCIPHERMENT']);
+
+      if (!templateId) {
+        keyUsageCtrl.setValue(['DIGITAL_SIGNATURE', 'KEY_ENCIPHERMENT']);
+      }
     }
 
     pathLenCtrl.updateValueAndValidity({ emitEvent: false });
@@ -235,6 +334,11 @@ export class IssueCertificateComponent implements OnInit {
         v.type === 'END_ENTITY'
           ? (v.keyUsage ?? ['DIGITAL_SIGNATURE', 'KEY_ENCIPHERMENT'])
           : (v.keyUsage ?? ['KEY_CERT_SIGN', 'CRL_SIGN']),
+      templateId: v.templateId ?? null,
+      extendedKeyUsage:
+        v.templateId && this.selectedTemplate
+          ? (this.selectedTemplate.extendedKeyUsages ?? [])
+          : [],
     };
 
     this.certApi.issueCertificate(req).subscribe({
@@ -275,7 +379,26 @@ export class IssueCertificateComponent implements OnInit {
 
     return null;
   }
+  private templateCnValidator = (
+    control: AbstractControl,
+  ): ValidationErrors | null => {
+    const value = control.value?.trim();
+    const regexStr = this.selectedTemplate?.cnRegex;
 
+    if (!value || !regexStr) {
+      return null;
+    }
+
+    try {
+      const regex = new RegExp(regexStr.trim());
+      console.log('Testing:', value, 'against', regexStr);
+      console.log('Result:', regex.test(value));
+
+      return regex.test(value) ? null : { templateCnMismatch: true };
+    } catch {
+      return { invalidTemplateRegex: true };
+    }
+  };
   private validateValidityAgainstIssuer() {
     const type = this.issueForm.get('type')?.value;
     const issuerId = this.issueForm.get('issuerCertificateId')?.value;
@@ -391,6 +514,57 @@ export class IssueCertificateComponent implements OnInit {
 
     pathLenCtrl.setErrors(
       Object.keys(currentErrors).length ? currentErrors : null,
+    );
+  }
+  private loadTemplatesByIssuer(issuerId: number) {
+    this.certApi.getTemplatesByIssuer(issuerId).subscribe({
+      next: (templates) => {
+        this.templates = templates;
+        this.selectedTemplate = null;
+
+        this.issueForm.patchValue({
+          templateId: null,
+        });
+      },
+      error: () => {
+        this.templates = [];
+        this.selectedTemplate = null;
+        this.message = 'Failed to load templates for selected issuer.';
+      },
+    });
+  }
+
+  private applyTemplate(template: CertificateTemplateDto) {
+    this.selectedTemplate = template;
+
+    const currentType = this.issueForm.get('type')?.value;
+
+    this.issueForm.patchValue({
+      validityDays: template.maxTtlDays,
+      keyUsage:
+        template.keyUsages && template.keyUsages.length > 0
+          ? template.keyUsages
+          : currentType === 'END_ENTITY'
+            ? ['DIGITAL_SIGNATURE', 'KEY_ENCIPHERMENT']
+            : ['KEY_CERT_SIGN', 'CRL_SIGN'],
+    });
+    this.issueForm.get('cn')?.updateValueAndValidity({ emitEvent: true });
+    this.issueForm.get('cn')?.markAsTouched();
+    this.validateValidityAgainstIssuer();
+    this.validatePathLenAgainstIssuer();
+  }
+
+  private clearTemplateSelection() {
+    this.templates = [];
+    this.selectedTemplate = null;
+    this.issueForm.patchValue({ templateId: null });
+    this.issueForm.get('cn')?.updateValueAndValidity();
+  }
+
+  shouldShowTemplates(): boolean {
+    const type = this.issueForm.get('type')?.value;
+    return (
+      type !== 'ROOT' && !!this.issueForm.get('issuerCertificateId')?.value
     );
   }
 }

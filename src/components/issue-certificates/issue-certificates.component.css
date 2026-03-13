@@ -313,3 +313,50 @@
     width: 100%;
   }
 }
+.invalid-input {
+  border: 1px solid #dc2626;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.08);
+}
+
+.field-error {
+  margin-top: 6px;
+  color: #dc2626;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.field-error span {
+  display: block;
+}
+
+.field-hint {
+  margin-top: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #6b7280;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.hint-icon {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #374151;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hint-text {
+  flex: 1;
+}

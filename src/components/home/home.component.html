@@ -24,8 +24,6 @@
 
   <!-- CA USER DASHBOARD -->
   <div *ngIf="isCaUser$ | async">
-    <!-- <h2>CA Dashboard</h2> -->
-
     <div class="card-grid">
       <button class="card" routerLink="/issue/intermediate">
         Issue Intermediate
@@ -33,9 +31,11 @@
 
       <button class="card" routerLink="/issue/ee">Issue End-Entity</button>
 
-      <button class="card">My Certificates</button>
+      <button class="card" routerLink="/my-certificates">
+        My Certificates
+      </button>
 
-      <button class="card">Manage Templates</button>
+      <button class="card" routerLink="/templates">Manage Templates</button>
     </div>
   </div>
 

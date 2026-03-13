@@ -358,6 +358,7 @@ export class AdminPanelComponent implements OnInit {
         v.type === 'END_ENTITY'
           ? ['DIGITAL_SIGNATURE', 'KEY_ENCIPHERMENT']
           : (v.keyUsage ?? ['KEY_CERT_SIGN', 'CRL_SIGN']),
+      extendedKeyUsage: [],
     };
 
     this.certApi.issueCertificate(req).subscribe({

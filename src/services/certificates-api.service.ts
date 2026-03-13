@@ -34,11 +34,35 @@ export interface IssueCertificateRequestDto {
   isCa: boolean;
   pathLen: number | null;
   keyUsage: string[]; // ["KEY_CERT_SIGN","CRL_SIGN"]
+  templateId?: number | null;
+  extendedKeyUsage: string[];
+}
+export interface CertificateTemplateDto {
+  id: number;
+  name: string;
+  issuerCertificateId: number;
+  issuerSubject: string;
+  cnRegex: string;
+  sanRegex: string | null;
+  maxTtlDays: number;
+  keyUsages: string[];
+  extendedKeyUsages: string[];
+}
+
+export interface CreateCertificateTemplateDto {
+  name: string;
+  issuerCertificateId: number;
+  cnRegex: string;
+  sanRegex: string | null;
+  maxTtlDays: number;
+  keyUsages: string[];
+  extendedKeyUsages: string[];
 }
 
 @Injectable({ providedIn: 'root' })
 export class CertificateApiService {
   private baseUrl = 'https://localhost:8443/api/certificates';
+  private templatesUrl = 'https://localhost:8443/api/templates';
   constructor(private http: HttpClient) {}
 
   getCertificates(): Observable<CertificateListDto[]> {
@@ -84,5 +108,25 @@ export class CertificateApiService {
     return this.http.get(`${this.baseUrl}/download.der/${id}`, {
       responseType: 'blob',
     });
+  }
+
+  getTemplates(): Observable<CertificateTemplateDto[]> {
+    return this.http.get<CertificateTemplateDto[]>(this.templatesUrl);
+  }
+
+  getTemplateById(id: number): Observable<CertificateTemplateDto> {
+    return this.http.get<CertificateTemplateDto>(`${this.templatesUrl}/${id}`);
+  }
+
+  getTemplatesByIssuer(issuerId: number): Observable<CertificateTemplateDto[]> {
+    return this.http.get<CertificateTemplateDto[]>(
+      `${this.templatesUrl}/issuer/${issuerId}`,
+    );
+  }
+
+  createTemplate(
+    req: CreateCertificateTemplateDto,
+  ): Observable<CertificateTemplateDto> {
+    return this.http.post<CertificateTemplateDto>(this.templatesUrl, req);
   }
 }
